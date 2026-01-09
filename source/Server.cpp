@@ -1,8 +1,5 @@
 #include "Server.hpp"
 
-#include <cstring>
-#include <iostream>
-
 Server::Server(uint16_t port) : _port(port)
 {
     _server_socket.bind(_port);
@@ -103,8 +100,32 @@ void Server::_handle_client_data(int fd)
     {
         std::string_view msg(buffer.data(), result.bytes);
 
-        std::cout << "[Server] Received (" << fd << "): " << msg << '\n';
-        client.write("Echo: ");
-        client.write(msg);
+        auto req = HttpParser::parse(msg);
+
+        if (req)
+        {
+            HttpResponse res{};
+            res.status_code = 200;
+            res.status_message = "OK";
+            res.body = "Hello From Rohit!!!!!!";
+
+            res.headers.emplace("Content-Type", "text/plain");
+            res.headers.emplace("Connection", "close");
+
+            const std::string response_str = res.to_string();
+
+            std::cout << "[Debug] Sending response:\n"
+                      << response_str << std::endl;
+
+            client.write(response_str);
+
+            // Erase here - the destructor will close the FD
+            _clients.erase(fd);
+            std::cout << "[Server] Response sent and connection closed." << std::endl;
+        }
+        else
+        {
+            std::cerr << "[Server] Client " << fd << " : Invalid Request.\n";
+        }
     }
 }
