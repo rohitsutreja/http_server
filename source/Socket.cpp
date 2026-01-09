@@ -8,6 +8,12 @@ Socket::Socket()
         throw std::runtime_error{std::strerror(errno)};
     }
 
+    int opt {1};
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    {
+        std::cerr << "Warning: setsockopt(SO_REUSEADDR) failed\n";
+    }
+
     _fd = fd;
 }
 

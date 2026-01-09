@@ -107,9 +107,9 @@ void Server::_handle_client_data(int fd)
             HttpResponse res{};
             res.status_code = 200;
             res.status_message = "OK";
-            res.body = "Hello From Rohit!!!!!!";
+            res.body = "<h1>Hello From Rohit!!!!!!</h1>";
 
-            res.headers.emplace("Content-Type", "text/plain");
+            res.headers.emplace("Content-Type", "text/html");
             res.headers.emplace("Connection", "close");
 
             const std::string response_str = res.to_string();
@@ -119,7 +119,6 @@ void Server::_handle_client_data(int fd)
 
             client.write(response_str);
 
-            // Erase here - the destructor will close the FD
             _clients.erase(fd);
             std::cout << "[Server] Response sent and connection closed." << std::endl;
         }
