@@ -1,7 +1,7 @@
 #include <optional>
 #include <string_view>
 
-#include "./../include/HttpRequest.hpp"
+#include "HttpRequest.hpp"
 
 namespace HttpParser
 {
@@ -36,7 +36,7 @@ namespace HttpParser
         if (uri_end == std::string_view::npos)
             return std::nullopt;
 
-        req.uri = std::string(first_line.substr(0, uri_end));
+        req.url = std::string(first_line.substr(0, uri_end));
 
         // Chop off URI
         first_line.remove_prefix(uri_end + 1);

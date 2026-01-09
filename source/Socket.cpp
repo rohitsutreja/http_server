@@ -1,7 +1,5 @@
 #include "Socket.hpp"
 
-
-
 Socket::Socket()
 {
     auto fd{socket(AF_INET, SOCK_STREAM, 0)};

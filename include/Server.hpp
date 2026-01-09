@@ -1,10 +1,16 @@
 #pragma once
 
+#include "HttpParser.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
+#include "HttpMethod.hpp"
 #include "Socket.hpp"
 #include "Epoll.hpp"
 #include "Status.hpp"
 
 #include <sys/socket.h>
+#include <cstring>
+#include <iostream>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cstring>

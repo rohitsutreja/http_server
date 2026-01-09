@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HttpMethod.h"
+#include "HttpMethod.hpp"
 
 #include <string>
 #include <optional>
@@ -14,7 +14,7 @@ struct HttpRequest
     std::unordered_map<std::string, std::string> headers{};
     std::string body{};
 
-    std::optional<std::string> get_header(const std::string header_name)
+    std::optional<std::string> get_header(const std::string& header_name)
     {
         const auto header_it{headers.find(header_name)};
         if (header_it == headers.end())
