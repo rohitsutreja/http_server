@@ -9,6 +9,7 @@ enum class HttpMethod : uint8_t
     GET,
     POST,
     PUT,
+    PATCH,
     DELETE,
     HEAD,
     OPTIONS,
@@ -23,6 +24,8 @@ inline HttpMethod string_to_method(std::string_view s)
         return HttpMethod::POST;
     if (s == "PUT")
         return HttpMethod::PUT;
+    if (s == "PATCH")
+        return HttpMethod::PATCH;
     if (s == "DELETE")
         return HttpMethod::DELETE;
     if (s == "HEAD")
@@ -42,6 +45,8 @@ inline std::string method_to_string(HttpMethod m)
         return "POST";
     case HttpMethod::PUT:
         return "PUT";
+    case HttpMethod::PATCH:
+        return "PATCH";
     case HttpMethod::DELETE:
         return "DELETE";
     case HttpMethod::HEAD:

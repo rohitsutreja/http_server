@@ -1,3 +1,5 @@
+#pragma once
+
 #include "HttpMethod.hpp"
 
 #include <unordered_map>

@@ -15,31 +15,38 @@
 #include <stdexcept>
 #include <iostream>
 
-class Socket
+namespace http_server
 {
-public:
-    Socket();
+    namespace details
+    {
 
-    void bind(uint16_t port);
-    void listen();
+        class Socket
+        {
+        public:
+            Socket();
 
-    std::optional<Socket> accept();
+            void bind(uint16_t port);
+            void listen();
 
-    IoResult read(std::span<char> buffer);
-    IoResult write(std::string_view data);
+            std::optional<Socket> accept();
 
-    ~Socket();
+            IoResult read(std::span<char> buffer);
+            IoResult write(std::string_view data);
 
-    Socket(const Socket &) = delete;
-    Socket &operator=(const Socket &) = delete;
+            ~Socket();
 
-    Socket(Socket &&other);
-    Socket &operator=(Socket &&other);
+            Socket(const Socket &) = delete;
+            Socket &operator=(const Socket &) = delete;
 
-    int get_fd() const { return _fd; }
+            Socket(Socket &&other);
+            Socket &operator=(Socket &&other);
 
-private:
-    explicit Socket(int fd);
+            int get_fd() const { return _fd; }
 
-    int _fd{-1};
-};
+        private:
+            explicit Socket(int fd);
+
+            int _fd{-1};
+        };
+    }
+}

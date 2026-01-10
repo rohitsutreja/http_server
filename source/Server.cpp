@@ -1,130 +1,130 @@
 #include "Server.hpp"
 
-Server::Server(uint16_t port) : _port(port)
+namespace http_server
 {
-    _server_socket.bind(_port);
-    _server_socket.listen();
-
-    const auto status{_epoll_instance.add(_server_socket, EPOLLIN)};
-
-    if (status.failed())
+    Server::Server(uint16_t port) : _port(port)
     {
-        throw std::runtime_error(status.message());
-    }
+        _server_socket.bind(_port);
+        _server_socket.listen();
 
-    std::cout << "[Server] Listening on port " << _port << "..." << std::endl;
-}
+        const auto status{_epoll_instance.add(_server_socket, EPOLLIN)};
 
-void Server::run()
-{
-    _running = true;
-    std::array<epoll_event, 64> events{};
-
-    while (_running)
-    {
-        const auto n{_epoll_instance.wait(events)};
-
-        if (n < 0)
+        if (status.failed())
         {
-            if (errno == EINTR)
-            {
-                continue;
-            }
-            std::cerr << "Epoll error: " << strerror(errno) << std::endl;
-            break;
+            throw std::runtime_error(status.message());
         }
 
-        for (int i{}; i < n; ++i)
-        {
-            const auto event_fd{events[i].data.fd};
+        std::cout << "[Server] Listening on port " << _port << "..." << std::endl;
+    }
 
-            if (event_fd == _server_socket.get_fd())
+    void Server::run()
+    {
+        _running = true;
+        std::array<epoll_event, 64> events{};
+
+        while (_running)
+        {
+            const auto n{_epoll_instance.wait(events)};
+
+            if (n < 0)
             {
-                _handle_accept();
+                if (errno == EINTR)
+                {
+                    continue;
+                }
+                std::cerr << "Epoll error: " << strerror(errno) << std::endl;
+                break;
             }
-            else
+
+            for (int i{}; i < n; ++i)
             {
-                _handle_client_data(event_fd);
+                const auto event_fd{events[i].data.fd};
+
+                if (event_fd == _server_socket.get_fd())
+                {
+                    _handle_accept();
+                }
+                else
+                {
+                    _handle_client_data(event_fd);
+                }
             }
         }
     }
-}
 
-void Server::_handle_accept()
-{
-    auto client{_server_socket.accept()};
-
-    if (!client)
+    void Server::set_handler(const HttpHandler &handler)
     {
-        return;
+        _handler = handler;
     }
 
-    const auto status{_epoll_instance.add(*client, EPOLLIN)};
-
-    if (status.failed())
+    void Server::_handle_accept()
     {
-        std::cerr << "[Server] Failed to add client to epoll: " << status.message() << "\n";
-        return;
-    }
+        auto client{_server_socket.accept()};
 
-    const auto client_fd{client->get_fd()};
-    _clients.emplace(client_fd, std::move(*client));
-
-    std::cout << "[Server] Client " << client_fd << " connected." << std::endl;
-}
-
-void Server::_handle_client_data(int fd)
-{
-    if (_clients.find(fd) == _clients.end())
-    {
-        return;
-    }
-
-    auto &client = _clients.at(fd);
-
-    std::array<char, 4096> buffer{};
-
-    const auto result{client.read(buffer)};
-
-    if (result.retry())
-    {
-        return;
-    }
-
-    if (!result.ok() || result.bytes == 0)
-    {
-        std::cerr << "[Server] Client " << fd << " disconnected.\n";
-        _clients.erase(fd);
-    }
-    else
-    {
-        std::string_view msg(buffer.data(), result.bytes);
-
-        auto req = HttpParser::parse(msg);
-
-        if (req)
+        if (!client)
         {
-            HttpResponse res{};
-            res.status_code = 200;
-            res.status_message = "OK";
-            res.body = "<h1>Hello From Rohit!!!!!!</h1>";
+            return;
+        }
 
-            res.headers.emplace("Content-Type", "text/html");
-            res.headers.emplace("Connection", "close");
+        const auto status{_epoll_instance.add(*client, EPOLLIN)};
 
-            const std::string response_str = res.to_string();
+        if (status.failed())
+        {
+            std::cerr << "[Server] Failed to add client to epoll: " << status.message() << "\n";
+            return;
+        }
 
-            std::cout << "[Debug] Sending response:\n"
-                      << response_str << std::endl;
+        const auto client_fd{client->get_fd()};
+        _clients.emplace(client_fd, std::move(*client));
 
-            client.write(response_str);
+        std::cout << "[Server] Client " << client_fd << " connected." << std::endl;
+    }
 
+    void Server::_handle_client_data(int fd)
+    {
+        if (_clients.find(fd) == _clients.end())
+        {
+            return;
+        }
+
+        auto &client = _clients.at(fd);
+
+        std::array<char, 4096> buffer{};
+
+        const auto result{client.read(buffer)};
+
+        if (result.retry())
+        {
+            return;
+        }
+
+        if (!result.ok() || result.bytes == 0)
+        {
+            std::cerr << "[Server] Client " << fd << " disconnected.\n";
             _clients.erase(fd);
-            std::cout << "[Server] Response sent and connection closed." << std::endl;
         }
         else
         {
-            std::cerr << "[Server] Client " << fd << " : Invalid Request.\n";
+            std::string_view msg(buffer.data(), result.bytes);
+
+            auto req = details::parse(msg);
+
+            if (req)
+            {
+                std::cout << "[Server] Client " << fd << " : Received Request - " << req->url << "\n";
+
+                auto res = _handler(*req);
+
+                client.write(res.to_string());
+
+                _clients.erase(fd);
+
+                std::cout << "[Server] Response sent and connection closed." << std::endl;
+            }
+            else
+            {
+                std::cerr << "[Server] Client " << fd << " : Invalid Request.\n";
+            }
         }
     }
 }

@@ -7,6 +7,7 @@
 #include "Socket.hpp"
 #include "Epoll.hpp"
 #include "Status.hpp"
+#include "Router.hpp"
 
 #include <sys/socket.h>
 #include <cstring>
@@ -22,22 +23,31 @@
 #include <cstdint>
 #include <array>
 
-class Server
+namespace http_server
 {
-public:
-    explicit Server(uint16_t port);
-    void run();
 
-private:
-    void _handle_accept();
+    class Server
+    {
+    public:
+        explicit Server(uint16_t port);
+        void run();
 
-    void _handle_client_data(int fd);
+        void set_handler(const HttpHandler &);
 
-    uint16_t _port;
-    bool _running{};
+    private:
+        void _handle_accept();
 
-    Socket _server_socket{};
-    Epoll _epoll_instance{};
+        void _handle_client_data(int fd);
 
-    std::unordered_map<int, Socket> _clients{};
-};
+        uint16_t _port;
+        bool _running{};
+
+        details::Socket _server_socket{};
+        details::Epoll _epoll_instance{};
+
+        HttpHandler _handler;
+
+        std::unordered_map<int, details::Socket> _clients{};
+    };
+
+}
