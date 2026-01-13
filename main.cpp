@@ -1,16 +1,15 @@
 #include <iostream>
 
-#include "Server.hpp"
-#include "Router.hpp"
+#include "App.hpp"
 
 int main()
 {
     try
     {
-        http_server::Router router{};
+        http_server::App app{8000};
 
-        router.Get("/", [](const HttpRequest &)
-                   {
+        app.get("/", [](const HttpRequest &)
+                {
             HttpResponse res{};
             res.status_code = 200;
             res.status_message = "OK";
@@ -21,8 +20,8 @@ int main()
 
             return res; });
 
-        router.Get("/home", [](const HttpRequest &)
-                   {
+        app.get("/home", [](const HttpRequest &)
+                {
             HttpResponse res{};
             res.status_code = 200;
             res.status_message = "OK";
@@ -33,12 +32,7 @@ int main()
 
             return res; });
 
-        http_server::Server server{8000};
-
-        server.set_handler([&router](const HttpRequest &req) -> HttpResponse
-                           { return router.route(req); });
-
-        server.run();
+        app.start();
     }
     catch (const std::exception &e)
     {

@@ -7,7 +7,6 @@ namespace http_server
 {
     namespace details
     {
-
         inline std::optional<HttpRequest> parse(std::string_view raw_request)
         {
             HttpRequest req{};

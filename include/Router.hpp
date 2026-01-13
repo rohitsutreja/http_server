@@ -1,81 +1,27 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string>
-#include <assert.h>
-#include <functional>
+#include <memory>
 
 #include "HttpMethod.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "Trie.hpp"
+#include "utils.hpp"
 
 namespace http_server
 {
-
-    using HttpHandler = std::function<HttpResponse(const HttpRequest &)>;
-
     class Router
     {
     public:
-        Router() = default;
+        Router() : _root{std::make_unique<details::TrieNode>()} {}
 
-        HttpResponse route(const HttpRequest &req)
-        {
-            {
+        HttpResponse route(HttpRequest &req);
 
-                Route route{req.method, req.url};
-
-                auto it = _routes.find(route);
-
-                if (it != _routes.end())
-                {
-                    return it->second(req);
-                }
-
-                HttpResponse res;
-                res.status_code = 404;
-                res.body = "<h1>404 Not Found</h1><p>The router could not match this path.</p>";
-                res.headers["Content-Type"] = "text/html";
-                res.headers["Content-Length"] = std::to_string(res.body.size());
-                return res;
-            }
-        }
-        void Get(std::string path, const HttpHandler &handler)
-        {
-            _add(HttpMethod::GET, path, handler);
-        }
-
-        void Put(std::string path, const HttpHandler &handler)
-        {
-            _add(HttpMethod::PUT, path, handler);
-        }
-
-        void Patch(std::string path, const HttpHandler &handler)
-        {
-            _add(HttpMethod::PATCH, path, handler);
-        }
-
-        void Post(std::string path, const HttpHandler &handler)
-        {
-            _add(HttpMethod::POST, path, handler);
-        }
-
-        void Delete(std::string path, const HttpHandler &handler)
-        {
-            _add(HttpMethod::DELETE, path, handler);
-        }
+        void add_route_handler(HttpMethod method, const std::string &path, const HttpHandler &handler);
 
     private:
-        using Route = std::pair<HttpMethod, std::string /* path */>;
-
-        void _add(HttpMethod method, std::string path, const HttpHandler &handler)
-        {
-            assert(method != HttpMethod::UNKNOWN);
-
-            Route route{method, path};
-            _routes.emplace(route, handler);
-        }
-
-        std::map<Route, HttpHandler> _routes;
+        std::unique_ptr<details::TrieNode> _root;
     };
 }

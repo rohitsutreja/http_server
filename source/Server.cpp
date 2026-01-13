@@ -111,15 +111,20 @@ namespace http_server
 
             if (req)
             {
-                std::cout << "[Server] Client " << fd << " : Received Request - " << req->url << "\n";
+                std::cout << "[Server] Client " << fd << " : " << method_to_string(req->method) << req->url << "\n";
+
+                if (!_handler)
+                {
+                    std::cerr << "[Server] No handler set to process the request.\n";
+                    _clients.erase(fd);
+                    return;
+                }
 
                 auto res = _handler(*req);
 
                 client.write(res.to_string());
 
                 _clients.erase(fd);
-
-                std::cout << "[Server] Response sent and connection closed." << std::endl;
             }
             else
             {
