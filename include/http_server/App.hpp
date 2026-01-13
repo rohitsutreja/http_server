@@ -1,5 +1,6 @@
-#include "Server.hpp"
-#include "Router.hpp"
+#include "http_server/Server.hpp"
+#include "http_server/Router.hpp"
+#include "http_server/HttpRequest.hpp"
 
 namespace http_server
 {

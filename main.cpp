@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "App.hpp"
+#include "http_server/App.hpp"
 
 int main()
 {
@@ -8,9 +8,9 @@ int main()
     {
         http_server::App app{8000};
 
-        app.get("/", [](const HttpRequest &)
+        app.get("/", [](const http_server::HttpRequest &)
                 {
-            HttpResponse res{};
+            http_server::HttpResponse res{};
             res.status_code = 200;
             res.status_message = "OK";
             res.body = "<h1>Hello World</h1>";
@@ -20,9 +20,9 @@ int main()
 
             return res; });
 
-        app.get("/home", [](const HttpRequest &)
+        app.get("/home", [](const http_server::HttpRequest &)
                 {
-            HttpResponse res{};
+             http_server::HttpResponse res{};
             res.status_code = 200;
             res.status_message = "OK";
             res.body = "<h1>Home!</h1>";

@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "utils.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
+#include "http_server/HttpRequest.hpp"
+#include "http_server/HttpResponse.hpp"
 
 namespace http_server
 {

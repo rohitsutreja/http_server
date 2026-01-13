@@ -1,4 +1,10 @@
-#include "Server.hpp"
+#include "http_server/Server.hpp"
+#include "http_server/Router.hpp"
+
+#include "http_server/HttpParser.hpp"
+#include "http_server/Socket.hpp"
+#include "http_server/Epoll.hpp"
+#include "http_server/Status.hpp"
 
 namespace http_server
 {

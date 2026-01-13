@@ -5,12 +5,11 @@
 #include <vector>
 #include <functional>
 
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
+#include "http_server/HttpRequest.hpp"
+#include "http_server/HttpResponse.hpp"
 
 namespace http_server
 {
-    using HttpHandler = std::function<HttpResponse(HttpRequest &)>;
 
     namespace details
     {

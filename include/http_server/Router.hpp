@@ -4,9 +4,10 @@
 #include <string>
 #include <memory>
 
-#include "HttpMethod.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
+#include "http_server/HttpMethod.hpp"
+#include "http_server/HttpRequest.hpp"
+#include "http_server/HttpResponse.hpp"
+
 #include "Trie.hpp"
 #include "utils.hpp"
 

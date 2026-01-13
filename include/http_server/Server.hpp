@@ -1,13 +1,11 @@
 #pragma once
 
-#include "HttpParser.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-#include "HttpMethod.hpp"
-#include "Socket.hpp"
-#include "Epoll.hpp"
-#include "Status.hpp"
-#include "Router.hpp"
+#include "http_server/HttpRequest.hpp"
+#include "http_server/HttpResponse.hpp"
+#include "http_server/HttpMethod.hpp"
+#include "http_server/Socket.hpp"
+#include "http_server/EPoll.hpp"
+
 
 #include <sys/socket.h>
 #include <cstring>
@@ -25,7 +23,6 @@
 
 namespace http_server
 {
-
     class Server
     {
     public:
