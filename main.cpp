@@ -1,44 +1,56 @@
 #include <iostream>
-
+#include <chrono>
 #include "http_server/App.hpp"
+
+using namespace http_server;
 
 int main()
 {
     try
     {
-        http_server::App app{8000};
+        App app{8000};
 
-        app.get("/", [](const http_server::HttpRequest &)
-                {
-            http_server::HttpResponse res{};
+        app.use([](HttpRequest &req, NextFunction next)
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            std::cout << "[LOG] IN: " << req.url << std::endl;
+
+            HttpResponse res = next(req);
+
+            auto end = std::chrono::high_resolution_clock::now();
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+            std::cout << "[LOG] OUT: " << res.status_code << " (" << ms << "ms)" << std::endl;
+            return res; 
+        });
+
+        app.use([](HttpRequest &req, NextFunction next)
+        {
+            if (req.url == "/admin") {
+                return HttpResponse(401, "Unauthorized Access!");
+            }
+            return next(req); 
+        });
+
+        app.get("/", [](const HttpRequest &)
+        {
+            HttpResponse res;
+            res.body = "<h1>Welcome to C++ HTTP Server!</h1>";
             res.status_code = 200;
             res.status_message = "OK";
-            res.body = "<h1>Hello World</h1>";
+            res.headers["Content-Type"] = "text/html";
+            return res; 
+        });
 
-            res.headers.emplace("Content-Type", "text/html");
-            res.headers.emplace("Connection", "close");
-
-            return res; });
-
-        app.get("/home", [](const http_server::HttpRequest &)
-                {
-             http_server::HttpResponse res{};
-            res.status_code = 200;
-            res.status_message = "OK";
-            res.body = "<h1>Home!</h1>";
-
-            res.headers.emplace("Content-Type", "text/html");
-            res.headers.emplace("Connection", "close");
-
-            return res; });
+        app.get("/admin", [](const HttpRequest &)
+        { 
+            return HttpResponse(200, "Welcome, Admin."); 
+        });
 
         app.start();
     }
     catch (const std::exception &e)
     {
-        std::cerr << "[Fatal Error] " << e.what() << std::endl;
-        return 1;
+        std::cerr << "[Fatal] " << e.what() << std::endl;
     }
-
     return 0;
 }
